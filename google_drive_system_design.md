@@ -276,3 +276,177 @@ txn {
 > **We separate metadata (strong) from content (eventual)**; that lets us give users correct sharing & version pointers while scaling blob storage cheaply. **CDC + rolling hashes** and **CAS** ensure we upload only changed chunks, with global **dedup** and **resumable parallel uploads**. We **pre-sign CDN downloads** for edge performance, and use **erasure coding** + **tiering** to control cost. Collaboration uses **CRDT/OT** for realtime docs; binaries rely on **MVCC + conflict copies**. The design is **multi-region active-active**, **KMS-encrypted**, auditable, and resilient to hot keys, outages, and scanner backlog. Our SLIs/SLOs and runbooks close the loop on operability.
 
 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here is the **entire content as one clean Markdown document**, with no extra commentary — you can copy/paste this directly into your notes or Notion:
+
+---
+
+# 🔍 Detecting Changed Chunks — Content Defined Chunking (CDC)
+
+## 🧠 Interview Overview
+
+To avoid re-uploading unchanged parts of a file, I use **Content-Defined Chunking (CDC)**. This is similar to what tools like *rsync*, Dropbox, or modern backup systems do.
+
+Instead of splitting files into fixed-size blocks (like 4MB), CDC splits them based on **content patterns** using rolling hashes such as **Rabin fingerprinting**. This ensures that even if bytes are inserted or deleted in the middle of a file, only the chunks around that change are affected — the rest remain unchanged.
+
+---
+
+## ⚙️ How CDC Works (Step-by-Step)
+
+### 1. **Chunk Boundary Detection**
+
+* A sliding window (e.g., 48 bytes) moves over the file.
+* At each byte, a **Rabin fingerprint** (rolling hash) is computed.
+* When the hash satisfies a certain pattern (e.g., lower 13 bits are zero), that position becomes a **chunk boundary**.
+* Result: variable-sized, content-aligned chunks.
+
+### 2. **Chunk Hashing**
+
+* Each chunk is hashed with **SHA-256**.
+* The hash is a unique fingerprint of the chunk.
+
+### 3. **Server Comparison**
+
+* The client sends a list of chunk-hashes.
+* The server checks them via:
+
+  * A **Bloom filter** for fast membership test, or
+  * A **hash index** in a key-value database.
+* Server tells the client which chunks it already has.
+
+### 4. **Selective Upload**
+
+* Only **new or modified chunks** are uploaded.
+* Unchanged chunks are skipped, saving time and bandwidth.
+
+### 5. **File Reconstruction**
+
+* Server reconstructs the final file using stored chunks and metadata.
+
+---
+
+## 🧩 Benefits Summary
+
+| Step                   | Process                   | Benefit                      |
+| ---------------------- | ------------------------- | ---------------------------- |
+| CDC                    | Dynamic chunking          | Handles insert/delete shifts |
+| SHA-256                | Unique ID per chunk       | Fast, secure deduplication   |
+| Server comparison      | Bloom filter / hash index | Fast detection of duplicates |
+| Upload only new chunks | Delta upload              | Reduced bandwidth            |
+| Chunk-based storage    | Metadata + pointers       | Versioning + deduplication   |
+
+---
+
+## 🧠 rsync Analogy
+
+`rsync` also uses rolling checksums to detect changed segments.
+CDC generalizes this idea using **variable-sized chunks**, making it ideal for distributed object storage, cloud sync engines, and backup systems.
+
+---
+
+# 🔀 Real-Time Sync: CRDTs vs OT
+
+Real-time collaborative systems (Google Docs, Figma, Notion) require conflict-free merging of concurrent edits. Two major approaches:
+
+* **Operational Transform (OT)**
+* **Conflict-free Replicated Data Types (CRDTs)**
+
+---
+
+# 1️⃣ Operational Transformation (OT)
+
+OT was popularized by **Google Docs**. It works by **transforming concurrent operations** so they can be applied consistently across all clients.
+
+### 🧩 Example
+
+* User A inserts `"Hi"` at position 0
+* User B inserts `"Hello"` at position 0
+* Edits are concurrent
+
+OT transforms operations so both clients converge to the same final document state (e.g., `"HelloHi"`).
+
+### ⚙️ Under the Hood
+
+* Each edit becomes an **operation** (`insert`, `delete`, `replace`).
+* A server keeps an **operation log**.
+* New operations are **transformed** against remote ones.
+* Requires a **central server** for consistent ordering.
+
+### ✅ Pros
+
+* Great for document editing
+* Production-proven (Google Docs, Etherpad)
+
+### ❌ Cons
+
+* Hard to scale for non-text data types
+* Transform logic is complex
+
+---
+
+# 2️⃣ Conflict-free Replicated Data Types (CRDTs)
+
+CRDTs take a **mathematical approach**. Instead of transforming operations, they design the **data structure itself** so that replicas can merge without conflicts.
+
+### 🧩 Example: Distributed Counter
+
+* Each replica increments a local counter.
+* On merge, counters are combined by taking the **max** per replica.
+* Result: deterministic, conflict-free.
+
+### ⚙️ How CRDTs Work
+
+* Operations are **commutative**, **associative**, **idempotent**.
+* Replicas sync by **state merge**, not operation order.
+* Works offline — syncs automatically when reconnected.
+
+### 🔠 CRDT Types
+
+| CRDT Type              | Purpose                    |
+| ---------------------- | -------------------------- |
+| G-Counter / PN-Counter | Distributed counters       |
+| LWW-Register           | Last-write-wins values     |
+| OR-Set                 | Sets with add/remove       |
+| RGA / LSeq / Yjs       | Collaborative text editing |
+
+### ✅ Pros
+
+* No central server required
+* Offline friendly
+* Cloud-native ideal for Figma, Notion, Yjs, Automerge
+
+### ❌ Cons
+
+* Metadata overhead (tombstones, version vectors)
+* Harder to design custom CRDTs
+
+---
+
+# 🧩 OT vs CRDT — Side-by-Side
+
+| Feature         | OT                       | CRDT                          |
+| --------------- | ------------------------ | ----------------------------- |
+| Approach        | Transform concurrent ops | Merge conflict-free states    |
+| Coordinator     | Central server           | None (decentralized)          |
+| Offline support | Limited                  | Excellent                     |
+| Complexity      | Transform logic          | Data structure logic          |
+| Used in         | Google Docs              | Figma, Notion, Automerge, Yjs |
+
+---
+
+
