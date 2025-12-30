@@ -722,3 +722,1247 @@ def groupAnagrams(strs):
 **Space:** O(n·k)
 
 ---
+
+## 31. Spiral Matrix
+
+**Problem:** Return all elements of a matrix in spiral order.
+🔗 [https://leetcode.com/problems/spiral-matrix/](https://leetcode.com/problems/spiral-matrix/)
+
+**Idea:** Peel layers one by one.
+
+```python
+def spiralOrder(matrix):
+    res = []
+    while matrix:
+        res += matrix.pop(0)
+        matrix = list(zip(*matrix))[::-1]
+    return res
+```
+
+**Time:** O(mn)
+**Space:** O(1) extra
+
+---
+
+## 32. Subsets
+
+**Problem:** Return all possible subsets (power set).
+🔗 [https://leetcode.com/problems/subsets/](https://leetcode.com/problems/subsets/)
+
+**Idea:** Backtracking – choose or skip.
+
+```python
+def subsets(nums):
+    res = []
+    def dfs(i, path):
+        res.append(path)
+        for j in range(i, len(nums)):
+            dfs(j+1, path+[nums[j]])
+    dfs(0, [])
+    return res
+```
+
+**Time:** O(2ⁿ)
+**Space:** O(n)
+
+---
+
+## 33. Permutations
+
+**Problem:** Return all permutations of numbers.
+🔗 [https://leetcode.com/problems/permutations/](https://leetcode.com/problems/permutations/)
+
+```python
+def permute(nums):
+    res = []
+    def dfs(path, used):
+        if len(path) == len(nums):
+            res.append(path)
+            return
+        for i in range(len(nums)):
+            if i in used: 
+                continue
+            dfs(path+[nums[i]], used|{i})
+    dfs([], set())
+    return res
+```
+
+**Time:** O(n · n!)
+**Space:** O(n)
+
+---
+
+## 34. Kth Largest Element in an Array
+
+**Problem:** Find kth largest element.
+🔗 [https://leetcode.com/problems/kth-largest-element-in-an-array/](https://leetcode.com/problems/kth-largest-element-in-an-array/)
+
+```python
+import heapq
+
+def findKthLargest(nums, k):
+    return heapq.nlargest(k, nums)[-1]
+```
+
+**Time:** O(n log k)
+**Space:** O(k)
+
+---
+
+## 35. Top K Frequent Elements
+
+**Problem:** Return k most frequent elements.
+🔗 [https://leetcode.com/problems/top-k-frequent-elements/](https://leetcode.com/problems/top-k-frequent-elements/)
+
+```python
+from collections import Counter
+import heapq
+
+def topKFrequent(nums, k):
+    cnt = Counter(nums)
+    return [x for x,_ in heapq.nlargest(k, cnt.items(), key=lambda x: x[1])]
+```
+
+**Time:** O(n log k)
+**Space:** O(n)
+
+---
+
+## 36. Binary Tree Right Side View
+
+**Problem:** Return values visible from right side.
+🔗 [https://leetcode.com/problems/binary-tree-right-side-view/](https://leetcode.com/problems/binary-tree-right-side-view/)
+
+```python
+def rightSideView(root):
+    res = []
+    def dfs(node, depth):
+        if not node:
+            return
+        if depth == len(res):
+            res.append(node.val)
+        dfs(node.right, depth+1)
+        dfs(node.left, depth+1)
+    dfs(root, 0)
+    return res
+```
+
+**Time:** O(n)
+**Space:** O(h)
+
+---
+
+## 37. Serialize and Deserialize Binary Tree
+
+**Problem:** Serialize tree to string and back.
+🔗 [https://leetcode.com/problems/serialize-and-deserialize-binary-tree/](https://leetcode.com/problems/serialize-and-deserialize-binary-tree/)
+
+```python
+def serialize(root):
+    res = []
+    def dfs(node):
+        if not node:
+            res.append('#')
+            return
+        res.append(str(node.val))
+        dfs(node.left)
+        dfs(node.right)
+    dfs(root)
+    return ",".join(res)
+
+def deserialize(data):
+    vals = iter(data.split(","))
+    def dfs():
+        v = next(vals)
+        if v == '#':
+            return None
+        node = TreeNode(int(v))
+        node.left = dfs()
+        node.right = dfs()
+        return node
+    return dfs()
+```
+
+**Time:** O(n)
+**Space:** O(n)
+
+---
+
+## 38. Maximum Depth of Binary Tree
+
+**Problem:** Find max depth of tree.
+🔗 [https://leetcode.com/problems/maximum-depth-of-binary-tree/](https://leetcode.com/problems/maximum-depth-of-binary-tree/)
+
+```python
+def maxDepth(root):
+    if not root:
+        return 0
+    return 1 + max(maxDepth(root.left), maxDepth(root.right))
+```
+
+**Time:** O(n)
+**Space:** O(h)
+
+---
+
+## 39. Symmetric Tree
+
+**Problem:** Check if tree is symmetric.
+🔗 [https://leetcode.com/problems/symmetric-tree/](https://leetcode.com/problems/symmetric-tree/)
+
+```python
+def isSymmetric(root):
+    def mirror(a, b):
+        if not a and not b:
+            return True
+        if not a or not b:
+            return False
+        return a.val == b.val and mirror(a.left, b.right) and mirror(a.right, b.left)
+    return mirror(root, root)
+```
+
+**Time:** O(n)
+**Space:** O(h)
+
+---
+
+## 40. Flatten Binary Tree to Linked List
+
+**Problem:** Flatten tree to linked list in-place.
+🔗 [https://leetcode.com/problems/flatten-binary-tree-to-linked-list/](https://leetcode.com/problems/flatten-binary-tree-to-linked-list/)
+
+```python
+def flatten(root):
+    if not root:
+        return
+    flatten(root.left)
+    flatten(root.right)
+    tmp = root.right
+    root.right = root.left
+    root.left = None
+    cur = root
+    while cur.right:
+        cur = cur.right
+    cur.right = tmp
+```
+
+**Time:** O(n)
+**Space:** O(h)
+
+---
+
+## 41. Trapping Rain Water
+
+**Problem:** Compute trapped rainwater.
+🔗 [https://leetcode.com/problems/trapping-rain-water/](https://leetcode.com/problems/trapping-rain-water/)
+
+```python
+def trap(height):
+    l, r = 0, len(height)-1
+    lm = rm = 0
+    res = 0
+    while l < r:
+        if height[l] < height[r]:
+            lm = max(lm, height[l])
+            res += lm - height[l]
+            l += 1
+        else:
+            rm = max(rm, height[r])
+            res += rm - height[r]
+            r -= 1
+    return res
+```
+
+**Time:** O(n)
+**Space:** O(1)
+
+---
+
+## 42. Minimum Window Substring
+
+**Problem:** Smallest substring containing all characters.
+🔗 [https://leetcode.com/problems/minimum-window-substring/](https://leetcode.com/problems/minimum-window-substring/)
+
+```python
+from collections import Counter
+
+def minWindow(s, t):
+    need = Counter(t)
+    missing = len(t)
+    l = start = end = 0
+    for r, c in enumerate(s, 1):
+        if need[c] > 0:
+            missing -= 1
+        need[c] -= 1
+        if missing == 0:
+            while l < r and need[s[l]] < 0:
+                need[s[l]] += 1
+                l += 1
+            if end == 0 or r-l < end-start:
+                start, end = l, r
+            need[s[l]] += 1
+            missing += 1
+            l += 1
+    return s[start:end]
+```
+
+**Time:** O(n)
+**Space:** O(k)
+
+---
+
+## 43. Sliding Window Maximum
+
+**Problem:** Return max in each window of size k.
+🔗 [https://leetcode.com/problems/sliding-window-maximum/](https://leetcode.com/problems/sliding-window-maximum/)
+
+```python
+from collections import deque
+
+def maxSlidingWindow(nums, k):
+    dq, res = deque(), []
+    for i,n in enumerate(nums):
+        while dq and nums[dq[-1]] < n:
+            dq.pop()
+        dq.append(i)
+        if dq[0] == i-k:
+            dq.popleft()
+        if i >= k-1:
+            res.append(nums[dq[0]])
+    return res
+```
+
+**Time:** O(n)
+**Space:** O(k)
+
+---
+
+## 44. LRU Cache
+
+**Problem:** Design LRU cache.
+🔗 [https://leetcode.com/problems/lru-cache/](https://leetcode.com/problems/lru-cache/)
+
+```python
+from collections import OrderedDict
+
+class LRUCache:
+    def __init__(self, capacity):
+        self.cache = OrderedDict()
+        self.cap = capacity
+
+    def get(self, key):
+        if key not in self.cache:
+            return -1
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def put(self, key, value):
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.cap:
+            self.cache.popitem(last=False)
+```
+
+**Time:** O(1)
+**Space:** O(capacity)
+
+---
+
+## 45. Find Median from Data Stream
+
+**Problem:** Maintain median of stream.
+🔗 [https://leetcode.com/problems/find-median-from-data-stream/](https://leetcode.com/problems/find-median-from-data-stream/)
+
+```python
+import heapq
+
+class MedianFinder:
+    def __init__(self):
+        self.small = []  # max heap
+        self.large = []  # min heap
+
+    def addNum(self, num):
+        heapq.heappush(self.small, -num)
+        heapq.heappush(self.large, -heapq.heappop(self.small))
+        if len(self.large) > len(self.small):
+            heapq.heappush(self.small, -heapq.heappop(self.large))
+
+    def findMedian(self):
+        if len(self.small) > len(self.large):
+            return -self.small[0]
+        return (-self.small[0] + self.large[0]) / 2
+```
+
+**Time:** O(log n)
+**Space:** O(n)
+
+---
+
+## 46. Kth Largest Element in an Array
+
+**Problem:** Return kth largest element.
+🔗 [https://leetcode.com/problems/kth-largest-element-in-an-array/](https://leetcode.com/problems/kth-largest-element-in-an-array/)
+
+```python
+import heapq
+
+def findKthLargest(nums, k):
+    return heapq.nlargest(k, nums)[-1]
+```
+
+**Time:** O(n log k)
+**Space:** O(k)
+
+---
+
+## 47. Set Matrix Zeroes
+
+**Problem:** Set rows & columns to zero.
+🔗 [https://leetcode.com/problems/set-matrix-zeroes/](https://leetcode.com/problems/set-matrix-zeroes/)
+
+```python
+def setZeroes(matrix):
+    rows, cols = len(matrix), len(matrix[0])
+    row0 = any(matrix[0][j] == 0 for j in range(cols))
+    col0 = any(matrix[i][0] == 0 for i in range(rows))
+
+    for i in range(1, rows):
+        for j in range(1, cols):
+            if matrix[i][j] == 0:
+                matrix[i][0] = matrix[0][j] = 0
+
+    for i in range(1, rows):
+        for j in range(1, cols):
+            if matrix[i][0] == 0 or matrix[0][j] == 0:
+                matrix[i][j] = 0
+
+    if row0:
+        for j in range(cols): matrix[0][j] = 0
+    if col0:
+        for i in range(rows): matrix[i][0] = 0
+```
+
+**Time:** O(mn)
+**Space:** O(1)
+
+---
+
+## 48. Rotate Array
+
+**Problem:** Rotate array by k steps.
+🔗 [https://leetcode.com/problems/rotate-array/](https://leetcode.com/problems/rotate-array/)
+
+```python
+def rotate(nums, k):
+    k %= len(nums)
+    nums[:] = nums[-k:] + nums[:-k]
+```
+
+**Time:** O(n)
+**Space:** O(1)
+
+---
+
+## 49. Binary Tree Right Side View
+
+**Problem:** Right view of tree.
+🔗 [https://leetcode.com/problems/binary-tree-right-side-view/](https://leetcode.com/problems/binary-tree-right-side-view/)
+
+```python
+def rightSideView(root):
+    res = []
+    def dfs(node, depth):
+        if not node:
+            return
+        if depth == len(res):
+            res.append(node.val)
+        dfs(node.right, depth+1)
+        dfs(node.left, depth+1)
+    dfs(root, 0)
+    return res
+```
+
+**Time:** O(n)
+**Space:** O(h)
+
+---
+
+## 50. Serialize and Deserialize Binary Tree
+
+**Problem:** Serialize and deserialize binary tree.
+🔗 [https://leetcode.com/problems/serialize-and-deserialize-binary-tree/](https://leetcode.com/problems/serialize-and-deserialize-binary-tree/)
+
+```python
+def serialize(root):
+    res = []
+    def dfs(node):
+        if not node:
+            res.append('#')
+            return
+        res.append(str(node.val))
+        dfs(node.left)
+        dfs(node.right)
+    dfs(root)
+    return ",".join(res)
+```
+
+**Time:** O(n)
+**Space:** O(n)
+
+---
+
+## 51. Maximum Depth of Binary Tree
+
+**Problem:** Return the maximum depth of a binary tree.
+🔗 [https://leetcode.com/problems/maximum-depth-of-binary-tree/](https://leetcode.com/problems/maximum-depth-of-binary-tree/)
+
+```python
+def maxDepth(root):
+    if not root:
+        return 0
+    return 1 + max(maxDepth(root.left), maxDepth(root.right))
+```
+
+**Time:** O(n)
+**Space:** O(h)
+
+---
+
+## 52. Symmetric Tree
+
+**Problem:** Check whether a tree is symmetric around its center.
+🔗 [https://leetcode.com/problems/symmetric-tree/](https://leetcode.com/problems/symmetric-tree/)
+
+```python
+def isSymmetric(root):
+    def mirror(a, b):
+        if not a and not b:
+            return True
+        if not a or not b:
+            return False
+        return a.val == b.val and mirror(a.left, b.right) and mirror(a.right, b.left)
+    return mirror(root, root)
+```
+
+**Time:** O(n)
+**Space:** O(h)
+
+---
+
+## 53. Flatten Binary Tree to Linked List
+
+**Problem:** Flatten a binary tree to a linked list in-place.
+🔗 [https://leetcode.com/problems/flatten-binary-tree-to-linked-list/](https://leetcode.com/problems/flatten-binary-tree-to-linked-list/)
+
+```python
+def flatten(root):
+    if not root:
+        return
+    flatten(root.left)
+    flatten(root.right)
+    tmp = root.right
+    root.right = root.left
+    root.left = None
+    cur = root
+    while cur.right:
+        cur = cur.right
+    cur.right = tmp
+```
+
+**Time:** O(n)
+**Space:** O(h)
+
+---
+
+## 54. Find Peak Element
+
+**Problem:** Find a peak element and return its index.
+🔗 [https://leetcode.com/problems/find-peak-element/](https://leetcode.com/problems/find-peak-element/)
+
+```python
+def findPeakElement(nums):
+    l, r = 0, len(nums)-1
+    while l < r:
+        m = (l + r) // 2
+        if nums[m] > nums[m+1]:
+            r = m
+        else:
+            l = m + 1
+    return l
+```
+
+**Time:** O(log n)
+**Space:** O(1)
+
+---
+
+## 55. Subsets
+
+**Problem:** Return all possible subsets of a set.
+🔗 [https://leetcode.com/problems/subsets/](https://leetcode.com/problems/subsets/)
+
+```python
+def subsets(nums):
+    res = []
+    def dfs(i, path):
+        res.append(path)
+        for j in range(i, len(nums)):
+            dfs(j+1, path+[nums[j]])
+    dfs(0, [])
+    return res
+```
+
+**Time:** O(2ⁿ)
+**Space:** O(n)
+
+---
+
+## 56. Permutations
+
+**Problem:** Return all permutations of numbers.
+🔗 [https://leetcode.com/problems/permutations/](https://leetcode.com/problems/permutations/)
+
+```python
+def permute(nums):
+    res = []
+    def dfs(path, used):
+        if len(path) == len(nums):
+            res.append(path)
+            return
+        for i in range(len(nums)):
+            if i in used:
+                continue
+            dfs(path+[nums[i]], used|{i})
+    dfs([], set())
+    return res
+```
+
+**Time:** O(n · n!)
+**Space:** O(n)
+
+---
+
+## 57. Combination Sum II
+
+**Problem:** Find unique combinations that sum to target (each number once).
+🔗 [https://leetcode.com/problems/combination-sum-ii/](https://leetcode.com/problems/combination-sum-ii/)
+
+```python
+def combinationSum2(candidates, target):
+    candidates.sort()
+    res = []
+    def dfs(start, path, total):
+        if total == target:
+            res.append(path)
+            return
+        if total > target:
+            return
+        for i in range(start, len(candidates)):
+            if i > start and candidates[i] == candidates[i-1]:
+                continue
+            dfs(i+1, path+[candidates[i]], total+candidates[i])
+    dfs(0, [], 0)
+    return res
+```
+
+**Time:** Exponential
+**Space:** O(n)
+
+---
+
+## 58. Gas Station
+
+**Problem:** Find starting gas station to complete circuit.
+🔗 [https://leetcode.com/problems/gas-station/](https://leetcode.com/problems/gas-station/)
+
+```python
+def canCompleteCircuit(gas, cost):
+    total = tank = start = 0
+    for i in range(len(gas)):
+        total += gas[i] - cost[i]
+        tank += gas[i] - cost[i]
+        if tank < 0:
+            start = i + 1
+            tank = 0
+    return start if total >= 0 else -1
+```
+
+**Time:** O(n)
+**Space:** O(1)
+
+---
+
+## 59. Valid Sudoku
+
+**Problem:** Determine if a Sudoku board is valid.
+🔗 [https://leetcode.com/problems/valid-sudoku/](https://leetcode.com/problems/valid-sudoku/)
+
+```python
+def isValidSudoku(board):
+    rows = [set() for _ in range(9)]
+    cols = [set() for _ in range(9)]
+    boxes = [set() for _ in range(9)]
+    for r in range(9):
+        for c in range(9):
+            v = board[r][c]
+            if v == '.':
+                continue
+            b = (r//3)*3 + c//3
+            if v in rows[r] or v in cols[c] or v in boxes[b]:
+                return False
+            rows[r].add(v)
+            cols[c].add(v)
+            boxes[b].add(v)
+    return True
+```
+
+**Time:** O(1)
+**Space:** O(1)
+
+---
+
+## 60. Sudoku Solver
+
+**Problem:** Solve a Sudoku puzzle.
+🔗 [https://leetcode.com/problems/sudoku-solver/](https://leetcode.com/problems/sudoku-solver/)
+
+```python
+def solveSudoku(board):
+    def valid(r, c, v):
+        for i in range(9):
+            if board[r][i] == v or board[i][c] == v:
+                return False
+            if board[(r//3)*3+i//3][(c//3)*3+i%3] == v:
+                return False
+        return True
+
+    def dfs():
+        for r in range(9):
+            for c in range(9):
+                if board[r][c] == '.':
+                    for v in "123456789":
+                        if valid(r, c, v):
+                            board[r][c] = v
+                            if dfs():
+                                return True
+                            board[r][c] = '.'
+                    return False
+        return True
+
+    dfs()
+```
+
+**Time:** Exponential
+**Space:** O(1)
+
+---
+
+## 61. Meeting Rooms II
+
+**Problem:** Minimum number of meeting rooms required.
+🔗 [https://leetcode.com/problems/meeting-rooms-ii/](https://leetcode.com/problems/meeting-rooms-ii/)
+
+```python
+import heapq
+
+def minMeetingRooms(intervals):
+    intervals.sort()
+    heap = []
+    for s,e in intervals:
+        if heap and heap[0] <= s:
+            heapq.heappop(heap)
+        heapq.heappush(heap, e)
+    return len(heap)
+```
+
+**Time:** O(n log n)
+**Space:** O(n)
+
+---
+
+## 62. Task Scheduler
+
+**Problem:** Minimum intervals to execute tasks with cooldown.
+🔗 [https://leetcode.com/problems/task-scheduler/](https://leetcode.com/problems/task-scheduler/)
+
+```python
+from collections import Counter
+
+def leastInterval(tasks, n):
+    freq = Counter(tasks)
+    maxf = max(freq.values())
+    cnt = sum(1 for v in freq.values() if v == maxf)
+    return max(len(tasks), (maxf-1)*(n+1) + cnt)
+```
+
+**Time:** O(n)
+**Space:** O(1)
+
+---
+
+## 63. Alien Dictionary
+
+**Problem:** Determine order of characters in alien language.
+🔗 [https://leetcode.com/problems/alien-dictionary/](https://leetcode.com/problems/alien-dictionary/)
+
+```python
+from collections import defaultdict, deque
+
+def alienOrder(words):
+    graph = defaultdict(set)
+    indeg = {c:0 for w in words for c in w}
+
+    for w1, w2 in zip(words, words[1:]):
+        for a,b in zip(w1, w2):
+            if a != b:
+                if b not in graph[a]:
+                    graph[a].add(b)
+                    indeg[b] += 1
+                break
+        else:
+            if len(w1) > len(w2):
+                return ""
+
+    q = deque([c for c in indeg if indeg[c] == 0])
+    res = []
+    while q:
+        c = q.popleft()
+        res.append(c)
+        for nei in graph[c]:
+            indeg[nei] -= 1
+            if indeg[nei] == 0:
+                q.append(nei)
+    return "".join(res) if len(res) == len(indeg) else ""
+```
+
+**Time:** O(V + E)
+**Space:** O(V)
+
+---
+
+## 64. Longest Consecutive Sequence
+
+**Problem:** Longest sequence of consecutive integers.
+🔗 [https://leetcode.com/problems/longest-consecutive-sequence/](https://leetcode.com/problems/longest-consecutive-sequence/)
+
+```python
+def longestConsecutive(nums):
+    s = set(nums)
+    best = 0
+    for n in s:
+        if n-1 not in s:
+            cur, length = n, 1
+            while cur+1 in s:
+                cur += 1
+                length += 1
+            best = max(best, length)
+    return best
+```
+
+**Time:** O(n)
+**Space:** O(n)
+
+---
+
+## 65. Edit Distance
+
+**Problem:** Minimum operations to convert one word to another.
+🔗 [https://leetcode.com/problems/edit-distance/](https://leetcode.com/problems/edit-distance/)
+
+```python
+def minDistance(a, b):
+    m, n = len(a), len(b)
+    dp = [[0]*(n+1) for _ in range(m+1)]
+    for i in range(m+1): dp[i][0] = i
+    for j in range(n+1): dp[0][j] = j
+
+    for i in range(1, m+1):
+        for j in range(1, n+1):
+            if a[i-1] == b[j-1]:
+                dp[i][j] = dp[i-1][j-1]
+            else:
+                dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
+    return dp[m][n]
+```
+
+**Time:** O(mn)
+**Space:** O(mn)
+
+---
+
+## 66. Burst Balloons
+
+**Problem:** Max coins by bursting balloons wisely.
+🔗 [https://leetcode.com/problems/burst-balloons/](https://leetcode.com/problems/burst-balloons/)
+
+```python
+def maxCoins(nums):
+    nums = [1] + nums + [1]
+    n = len(nums)
+    dp = [[0]*n for _ in range(n)]
+    for length in range(2, n):
+        for l in range(n-length):
+            r = l + length
+            for k in range(l+1, r):
+                dp[l][r] = max(dp[l][r],
+                               nums[l]*nums[k]*nums[r] + dp[l][k] + dp[k][r])
+    return dp[0][-1]
+```
+
+**Time:** O(n³)
+**Space:** O(n²)
+
+---
+
+## 67. Word Ladder
+
+**Problem:** Shortest transformation sequence length.
+🔗 [https://leetcode.com/problems/word-ladder/](https://leetcode.com/problems/word-ladder/)
+
+```python
+from collections import deque
+
+def ladderLength(begin, end, wordList):
+    wordList = set(wordList)
+    q = deque([(begin, 1)])
+    while q:
+        w, d = q.popleft()
+        if w == end:
+            return d
+        for i in range(len(w)):
+            for c in "abcdefghijklmnopqrstuvwxyz":
+                nw = w[:i] + c + w[i+1:]
+                if nw in wordList:
+                    wordList.remove(nw)
+                    q.append((nw, d+1))
+    return 0
+```
+
+**Time:** O(n · 26 · L)
+**Space:** O(n)
+
+---
+
+## 68. Palindromic Substrings
+
+**Problem:** Count palindromic substrings.
+🔗 [https://leetcode.com/problems/palindromic-substrings/](https://leetcode.com/problems/palindromic-substrings/)
+
+```python
+def countSubstrings(s):
+    res = 0
+    for i in range(len(s)):
+        for l, r in [(i,i), (i,i+1)]:
+            while l >= 0 and r < len(s) and s[l] == s[r]:
+                res += 1
+                l -= 1
+                r += 1
+    return res
+```
+
+**Time:** O(n²)
+**Space:** O(1)
+
+---
+
+## 69. Find the Duplicate Number
+
+**Problem:** Find duplicate without modifying array.
+🔗 [https://leetcode.com/problems/find-the-duplicate-number/](https://leetcode.com/problems/find-the-duplicate-number/)
+
+```python
+def findDuplicate(nums):
+    slow = fast = nums[0]
+    while True:
+        slow = nums[slow]
+        fast = nums[nums[fast]]
+        if slow == fast:
+            break
+    slow = nums[0]
+    while slow != fast:
+        slow = nums[slow]
+        fast = nums[fast]
+    return slow
+```
+
+**Time:** O(n)
+**Space:** O(1)
+
+---
+
+## 70. Binary Tree Maximum Path Sum
+
+**Problem:** Maximum path sum in tree.
+🔗 [https://leetcode.com/problems/binary-tree-maximum-path-sum/](https://leetcode.com/problems/binary-tree-maximum-path-sum/)
+
+```python
+def maxPathSum(root):
+    res = float('-inf')
+    def dfs(node):
+        nonlocal res
+        if not node:
+            return 0
+        l = max(dfs(node.left), 0)
+        r = max(dfs(node.right), 0)
+        res = max(res, node.val + l + r)
+        return node.val + max(l, r)
+    dfs(root)
+    return res
+```
+
+**Time:** O(n)
+**Space:** O(h)
+
+---
+
+## 71. Minimum Cost to Cut a Stick
+
+**Problem:** Minimum total cost of cuts.
+🔗 [https://leetcode.com/problems/minimum-cost-to-cut-a-stick/](https://leetcode.com/problems/minimum-cost-to-cut-a-stick/)
+
+```python
+def minCost(n, cuts):
+    cuts = [0] + sorted(cuts) + [n]
+    m = len(cuts)
+    dp = [[0]*m for _ in range(m)]
+    for length in range(2, m):
+        for i in range(m-length):
+            j = i + length
+            dp[i][j] = min(
+                cuts[j] - cuts[i] + dp[i][k] + dp[k][j]
+                for k in range(i+1, j)
+            )
+    return dp[0][-1]
+```
+
+**Time:** O(n³)
+**Space:** O(n²)
+
+---
+
+## 72. Regular Expression Matching
+
+**Problem:** Regex matching with `.` and `*`.
+🔗 [https://leetcode.com/problems/regular-expression-matching/](https://leetcode.com/problems/regular-expression-matching/)
+
+```python
+def isMatch(s, p):
+    dp = [[False]*(len(p)+1) for _ in range(len(s)+1)]
+    dp[0][0] = True
+
+    for j in range(2, len(p)+1):
+        if p[j-1] == '*':
+            dp[0][j] = dp[0][j-2]
+
+    for i in range(1, len(s)+1):
+        for j in range(1, len(p)+1):
+            if p[j-1] in {s[i-1], '.'}:
+                dp[i][j] = dp[i-1][j-1]
+            elif p[j-1] == '*':
+                dp[i][j] = dp[i][j-2] or \
+                           (p[j-2] in {s[i-1], '.'} and dp[i-1][j])
+    return dp[-1][-1]
+```
+
+**Time:** O(mn)
+**Space:** O(mn)
+
+---
+
+## 73. Maximal Rectangle
+
+**Problem:** Largest rectangle of 1’s in a binary matrix.
+🔗 [https://leetcode.com/problems/maximal-rectangle/](https://leetcode.com/problems/maximal-rectangle/)
+
+```python
+def maximalRectangle(matrix):
+    if not matrix:
+        return 0
+    heights = [0]*len(matrix[0])
+    res = 0
+    for row in matrix:
+        for i,v in enumerate(row):
+            heights[i] = heights[i]+1 if v=='1' else 0
+        stack = []
+        for i,h in enumerate(heights+[0]):
+            while stack and heights[stack[-1]] > h:
+                H = heights[stack.pop()]
+                W = i if not stack else i-stack[-1]-1
+                res = max(res, H*W)
+            stack.append(i)
+    return res
+```
+
+**Time:** O(mn)
+**Space:** O(n)
+
+---
+
+## 74. Largest Rectangle in Histogram
+
+**Problem:** Largest rectangle area in histogram.
+🔗 [https://leetcode.com/problems/largest-rectangle-in-histogram/](https://leetcode.com/problems/largest-rectangle-in-histogram/)
+
+```python
+def largestRectangleArea(heights):
+    stack, res = [], 0
+    for i,h in enumerate(heights+[0]):
+        while stack and heights[stack[-1]] > h:
+            H = heights[stack.pop()]
+            W = i if not stack else i-stack[-1]-1
+            res = max(res, H*W)
+        stack.append(i)
+    return res
+```
+
+**Time:** O(n)
+**Space:** O(n)
+
+---
+
+## 75. Median of Two Sorted Arrays
+
+**Problem:** Median of two sorted arrays.
+🔗 [https://leetcode.com/problems/median-of-two-sorted-arrays/](https://leetcode.com/problems/median-of-two-sorted-arrays/)
+
+*(Same solution as Problem 13)*
+
+---
+
+## 76. Count of Smaller Numbers After Self
+
+**Problem:** Count smaller numbers after each element.
+🔗 [https://leetcode.com/problems/count-of-smaller-numbers-after-self/](https://leetcode.com/problems/count-of-smaller-numbers-after-self/)
+
+```python
+def countSmaller(nums):
+    res = [0]*len(nums)
+    enum = list(enumerate(nums))
+
+    def sort(arr):
+        if len(arr) <= 1:
+            return arr
+        mid = len(arr)//2
+        left, right = sort(arr[:mid]), sort(arr[mid:])
+        i = 0
+        for l in left:
+            while i < len(right) and right[i][1] < l[1]:
+                i += 1
+            res[l[0]] += i
+        return sorted(left+right, key=lambda x: x[1])
+
+    sort(enum)
+    return res
+```
+
+**Time:** O(n log n)
+**Space:** O(n)
+
+---
+
+## 77. Course Schedule II
+
+**Problem:** Return course order if possible.
+🔗 [https://leetcode.com/problems/course-schedule-ii/](https://leetcode.com/problems/course-schedule-ii/)
+
+```python
+from collections import defaultdict, deque
+
+def findOrder(n, prereq):
+    g = defaultdict(list)
+    indeg = [0]*n
+    for a,b in prereq:
+        g[b].append(a)
+        indeg[a]+=1
+
+    q = deque([i for i in range(n) if indeg[i]==0])
+    res=[]
+    while q:
+        c=q.popleft()
+        res.append(c)
+        for nei in g[c]:
+            indeg[nei]-=1
+            if indeg[nei]==0:
+                q.append(nei)
+    return res if len(res)==n else []
+```
+
+**Time:** O(V+E)
+**Space:** O(V)
+
+---
+
+## 78. Minimum Number of Refueling Stops
+
+**Problem:** Minimum refuels to reach target.
+🔗 [https://leetcode.com/problems/minimum-number-of-refueling-stops/](https://leetcode.com/problems/minimum-number-of-refueling-stops/)
+
+```python
+import heapq
+
+def minRefuelStops(target, fuel, stations):
+    heap = []
+    i = res = 0
+    while fuel < target:
+        while i < len(stations) and stations[i][0] <= fuel:
+            heapq.heappush(heap, -stations[i][1])
+            i += 1
+        if not heap:
+            return -1
+        fuel += -heapq.heappop(heap)
+        res += 1
+    return res
+```
+
+**Time:** O(n log n)
+**Space:** O(n)
+
+---
+
+## 79. Maximum Product Subarray
+
+**Problem:** Maximum product of a contiguous subarray.
+🔗 [https://leetcode.com/problems/maximum-product-subarray/](https://leetcode.com/problems/maximum-product-subarray/)
+
+```python
+def maxProduct(nums):
+    cur_max = cur_min = res = nums[0]
+    for n in nums[1:]:
+        tmp = cur_max
+        cur_max = max(n, tmp*n, cur_min*n)
+        cur_min = min(n, tmp*n, cur_min*n)
+        res = max(res, cur_max)
+    return res
+```
+
+**Time:** O(n)
+**Space:** O(1)
+
+---
+
+## 80. Longest Valid Parentheses
+
+**Problem:** Length of longest valid parentheses substring.
+🔗 [https://leetcode.com/problems/longest-valid-parentheses/](https://leetcode.com/problems/longest-valid-parentheses/)
+
+```python
+def longestValidParentheses(s):
+    stack = [-1]
+    res = 0
+    for i,c in enumerate(s):
+        if c == '(':
+            stack.append(i)
+        else:
+            stack.pop()
+            if not stack:
+                stack.append(i)
+            else:
+                res = max(res, i-stack[-1])
+    return res
+```
+
+**Time:** O(n)
+**Space:** O(n)
+
+---
